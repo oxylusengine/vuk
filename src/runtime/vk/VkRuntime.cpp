@@ -13,6 +13,7 @@
 #include "vuk/runtime/vk/VkRuntime.hpp"
 #include "vuk/runtime/vk/VkSwapchain.hpp"
 
+#include <fmt/format.h>
 #include <plf_colony.h>
 #include <robin_hood.h>
 
@@ -51,31 +52,42 @@ namespace {
 } // namespace
 
 namespace vuk {
-	bool FunctionPointers::check_pfns() {
-		bool valid = true;
-#define VUK_X(name) valid = valid && name;
-#define VUK_Y(name) valid = valid && name;
+	const char* FunctionPointers::check_pfns() {
+		const char* failed_pfn = nullptr;
+#define VUK_X(name)                                                                                                                                            \
+	if (!(name)) {                                                                                                                                               \
+		failed_pfn = #name;                                                                                                                                        \
+	}
+#define VUK_Y(name)                                                                                                                                            \
+	if (!(name)) {                                                                                                                                               \
+		failed_pfn = #name;                                                                                                                                        \
+	}
 #include "vuk/runtime/vk/VkPFNRequired.hpp"
 #undef VUK_X
 #undef VUK_Y
-		return valid;
+		return failed_pfn;
 	}
 
 	vuk::Result<void> FunctionPointers::load_pfns(VkInstance instance, VkDevice device, bool allow_dynamic_loading_of_vk_function_pointers) {
 		// PFN loading
 		// if the user passes in PFNs, those will be used, always
-		if (check_pfns()) {
+		const char* missing_pfn = check_pfns();
+		if (missing_pfn == nullptr) {
 			return { vuk::expected_value };
 		}
 		// we don't have all the PFNs, so we will load them if this is allowed
 		if (vkGetInstanceProcAddr && allow_dynamic_loading_of_vk_function_pointers) {
 			load_pfns_dynamic(instance, device, *this);
-			if (!check_pfns()) {
+			missing_pfn = check_pfns(); // missing_pfn == nullptr -> all found
+			if (missing_pfn != nullptr) {
 				return { vuk::expected_error,
-					       vuk::RequiredPFNMissingException{ "A Vulkan PFN is required, but was not provided and dynamic loading could not load it." } };
+					       vuk::RequiredPFNMissingException{
+					           fmt::format("Vulkan PFN {} is required, but was not provided and dynamic loading could not load it", missing_pfn) } };
 			}
 		} else {
-			return { vuk::expected_error, vuk::RequiredPFNMissingException{ "A Vulkan PFN is required, but was not provided and dynamic loading was not allowed." } };
+			return { vuk::expected_error,
+				       vuk::RequiredPFNMissingException{
+				           fmt::format("Vulkan PFN {} is required, but was not provided and dynamic loading was not allowed.", missing_pfn) } };
 		}
 		return { vuk::expected_value };
 	}
@@ -166,7 +178,7 @@ namespace vuk {
 	    instance(params.instance),
 	    device(params.device),
 	    physical_device(params.physical_device) {
-		assert(check_pfns());
+		assert(!check_pfns());
 
 		impl = new ContextImpl(*this);
 		impl->executors = std::move(params.executors);
