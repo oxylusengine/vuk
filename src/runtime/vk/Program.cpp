@@ -494,7 +494,17 @@ namespace vuk {
 
 	void Program::append(const Program& o) {
 		attributes.insert(attributes.end(), o.attributes.begin(), o.attributes.end());
-		push_constant_ranges.insert(push_constant_ranges.end(), o.push_constant_ranges.begin(), o.push_constant_ranges.end());
+		// TODO: no partial overlaps
+		for (auto& incoming_pc : o.push_constant_ranges) {
+			auto it = std::find_if(push_constant_ranges.begin(), push_constant_ranges.end(), [&](auto& pcr) {
+				return pcr.offset == incoming_pc.offset && pcr.size == incoming_pc.size;
+			});
+			if (it != push_constant_ranges.end()) {
+				it->stageFlags |= incoming_pc.stageFlags;
+			} else {
+				push_constant_ranges.push_back(incoming_pc);
+			}
+		}
 		spec_constants.insert(spec_constants.end(), o.spec_constants.begin(), o.spec_constants.end());
 		unq(spec_constants);
 		if (o.sets.size() > sets.size()) {
