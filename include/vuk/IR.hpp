@@ -581,7 +581,7 @@ namespace vuk {
 
 	template<class T, size_t size>
 	struct InlineArena {
-		std::unique_ptr<InlineArena> next;
+		InlineArena* next = nullptr;
 		std::byte arena[size];
 		std::byte* base;
 		std::byte* cur;
@@ -591,8 +591,19 @@ namespace vuk {
 			base = cur = arena;
 		}
 
+		~InlineArena() {
+			reset();
+		}
+
 		void reset() {
-			next.reset();
+			InlineArena* node = next;
+			while (node) {
+				InlineArena* tmp = node->next;
+				node->next = nullptr;
+				delete node;
+				node = tmp;
+			}
+			next = nullptr;
 			base = cur = arena;
 		}
 
@@ -612,9 +623,9 @@ namespace vuk {
 		void grow() {
 			InlineArena* tail = this;
 			while (tail->next != nullptr) {
-				tail = tail->next.get();
+				tail = tail->next;
 			}
-			tail->next = std::make_unique<InlineArena>();
+			tail->next = new InlineArena();
 			base = cur = tail->next->arena;
 		}
 
