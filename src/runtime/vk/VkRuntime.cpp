@@ -408,9 +408,10 @@ namespace vuk {
 		for (auto& l : cinfo.explicit_set_layouts) {
 			plci.dslcis[l.index] = l;
 		}
+		assert(accumulated_reflection.push_constant_ranges.size() <= VUK_MAX_PUSHCONSTANT_RANGES);
 		plci.pcrs.insert(plci.pcrs.begin(), accumulated_reflection.push_constant_ranges.begin(), accumulated_reflection.push_constant_ranges.end());
-		plci.plci.pushConstantRangeCount = (uint32_t)accumulated_reflection.push_constant_ranges.size();
-		plci.plci.pPushConstantRanges = accumulated_reflection.push_constant_ranges.data();
+		plci.plci.pushConstantRangeCount = (uint32_t)plci.pcrs.size();
+		plci.plci.pPushConstantRanges = plci.pcrs.data();
 		std::array<DescriptorSetLayoutAllocInfo, VUK_MAX_SETS> dslai = {};
 		std::vector<VkDescriptorSetLayout> dsls;
 		bool use_pd = default_descriptor_set_strategy == DescriptorSetStrategyFlagBits::ePushDescriptor;
