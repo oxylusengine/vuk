@@ -691,26 +691,26 @@ namespace vuk {
 				set_constants = read<Bitset<VUK_MAX_SPECIALIZATIONCONSTANT_RANGES>>(data_ptr);
 				specialization_constant_data = data_ptr;
 
+				uint16_t data_offsets[VUK_MAX_SPECIALIZATIONCONSTANT_RANGES] = {};
 				for (unsigned i = 0; i < cinfo.base->reflection_info.spec_constants.size(); i++) {
 					auto& sc = cinfo.base->reflection_info.spec_constants[i];
 					uint16_t size = sc.type == Program::Type::edouble ? (uint16_t)sizeof(double) : 4;
 					if (set_constants.test(i)) {
+						data_offsets[i] = specialization_constant_data_size;
 						specialization_constant_data_size += size;
 					}
 				}
 				data_ptr += specialization_constant_data_size;
 
 				uint16_t entry_offset = 0;
-				for (uint32_t i = 0; i < psscis.size(); i++) {
-					auto& pssci = psscis[i];
-					uint16_t data_offset = 0;
+				for (uint32_t stage_index = 0; stage_index < psscis.size(); stage_index++) {
+					auto& pssci = psscis[stage_index];
 					uint16_t current_entry_offset = entry_offset;
 					for (unsigned i = 0; i < cinfo.base->reflection_info.spec_constants.size(); i++) {
 						auto& sc = cinfo.base->reflection_info.spec_constants[i];
 						auto size = sc.type == Program::Type::edouble ? sizeof(double) : 4;
-						if (sc.stage & pssci.stage) {
-							specialization_map_entries.emplace_back(VkSpecializationMapEntry{ sc.binding, data_offset, size });
-							data_offset += (uint16_t)size;
+						if (set_constants.test(i) && (sc.stage & pssci.stage)) {
+							specialization_map_entries.emplace_back(VkSpecializationMapEntry{ sc.binding, data_offsets[i], size });
 							entry_offset++;
 						}
 					}
