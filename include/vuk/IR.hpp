@@ -244,6 +244,12 @@ namespace vuk {
 				return "TessS";
 			case vuk::eTessellationUniformRead:
 				return "TessU";
+			case eMeshRead:
+				return "MeshR";
+			case eMeshSampled:
+				return "MeshS";
+			case eMeshUniformRead:
+				return "MeshU";
 			default:
 				return "<multiple>";
 			}
