@@ -754,6 +754,13 @@ namespace vuk {
 		eTessellationRead = 1ULL << 39,
 		/// Read from a uniform buffer in a tessellation shader
 		eTessellationUniformRead = 1ULL << 40,
+
+		/// Sampled in a mesh or task shader
+		eMeshSampled = 1ULL << 41,
+		/// Read from an image or buffer in a mesh or task shader
+		eMeshRead = 1ULL << 42,
+		/// Read from a uniform buffer in a mesh or task shader
+		eMeshUniformRead = 1ULL << 43,
 	};
 
 	/// @brief Combine two Access flags

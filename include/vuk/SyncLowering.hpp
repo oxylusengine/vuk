@@ -61,11 +61,12 @@ namespace vuk {
 		if (ia & eDepthStencilRW) {
 			qr.stages |= PipelineStageFlagBits::eEarlyFragmentTests | PipelineStageFlagBits::eLateFragmentTests;
 		}
-		if (ia & (eFragmentUniformRead | eComputeUniformRead | eVertexUniformRead | eRayTracingUniformRead | eTessellationUniformRead)) {
+		if (ia & (eFragmentUniformRead | eComputeUniformRead | eVertexUniformRead | eRayTracingUniformRead | eTessellationUniformRead |
+		          eMeshUniformRead)) {
 			qr.access |= AccessFlagBits::eUniformRead;
 			qr.layout = combine_layout(qr.layout, ImageLayout::eGeneral);
 		}
-		if (ia & (eFragmentRead | eComputeRead | eVertexRead | eRayTracingRead | eTessellationRead)) {
+		if (ia & (eFragmentRead | eComputeRead | eVertexRead | eRayTracingRead | eTessellationRead | eMeshRead)) {
 			qr.access |= AccessFlagBits::eShaderStorageRead;
 			qr.layout = combine_layout(qr.layout, ImageLayout::eGeneral);
 		}
@@ -77,7 +78,7 @@ namespace vuk {
 			qr.access |= AccessFlagBits::eShaderStorageWrite;
 			qr.layout = combine_layout(qr.layout, ImageLayout::eGeneral);
 		}
-		if (ia & (eFragmentSampled | eComputeSampled | eRayTracingSampled | eTessellationSampled)) {
+		if (ia & (eFragmentSampled | eComputeSampled | eRayTracingSampled | eTessellationSampled | eMeshSampled)) {
 			qr.access |= AccessFlagBits::eShaderSampledRead;
 			qr.layout = combine_layout(qr.layout, ImageLayout::eReadOnlyOptimalKHR);
 		}
@@ -87,6 +88,9 @@ namespace vuk {
 		}
 		if (ia & (eTessellationRead | eTessellationSampled | eTessellationUniformRead)) {
 			qr.stages |= PipelineStageFlagBits::eTessellationControlShader | PipelineStageFlagBits::eTessellationEvaluationShader;
+		}
+		if (ia & (eMeshRead | eMeshSampled | eMeshUniformRead)) {
+			qr.stages |= PipelineStageFlagBits::eTaskShaderEXT | PipelineStageFlagBits::eMeshShaderEXT;
 		}
 		if (ia & (eFragmentRW | eFragmentSampled | eFragmentUniformRead)) {
 			qr.stages |= PipelineStageFlagBits::eFragmentShader;
@@ -249,7 +253,7 @@ namespace vuk {
 	}
 
 	inline bool is_storage_access(Access a) {
-		return (a & (eComputeRW | eVertexRead | eFragmentRW | eRayTracingRW | eHostRW | eTessellationRead));
+		return (a & (eComputeRW | eVertexRead | eFragmentRW | eRayTracingRW | eHostRW | eTessellationRead | eMeshRead));
 	}
 
 	inline bool is_readonly_access(Access a) {
