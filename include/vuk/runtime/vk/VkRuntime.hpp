@@ -26,7 +26,8 @@ namespace vuk {
 #include "vuk/runtime/vk/VkPFNRequired.hpp"
 
 		/// @brief Check if all required function pointers are available (if providing them externally)
-		bool check_pfns();
+		/// @return nullptr if all required function pointers are available, otherwise returns the name of the first missing function pointer
+		const char* check_pfns();
 		/// @brief Load function pointers that the runtime needs
 		/// @param instance Vulkan instance
 		/// @param device Vulkan device

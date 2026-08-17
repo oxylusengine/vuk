@@ -12,7 +12,7 @@ function(target_shaders target)
          # construct the output file name
         cmake_path(RELATIVE_PATH shader_file OUTPUT_VARIABLE rel_path)
         cmake_path(GET shader_file FILENAME fname)
-        cmake_path(APPEND CMAKE_SOURCE_DIR "bin" ${fname} OUTPUT_VARIABLE bin_path)
+        cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR ${fname} OUTPUT_VARIABLE bin_path)
         cmake_path(APPEND_STRING bin_path ".spv" OUTPUT_VARIABLE output_file)
 
         add_custom_target("vuk_shader_binaries_${shader_file}")

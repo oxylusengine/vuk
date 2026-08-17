@@ -881,7 +881,7 @@ namespace vuk {
 		Allocator alloc;
 		ProfilingCallbacks* callbacks;
 		std::pmr::vector<Ref>& pass_reads;
-		InlineArena<std::byte, 1024> arena;
+		InlineArena<std::byte, 2048> arena;
 
 		std::unordered_map<DomainFlagBits, std::unique_ptr<Stream>> streams;
 		struct PartialStreamResourceUse : StreamResourceUse {
@@ -990,7 +990,7 @@ namespace vuk {
 
 			if (base_ty->hash_value == current_module->types.builtin_image) {
 				auto& img_att = *reinterpret_cast<ImageAttachment*>(value);
-				std::vector<Subrange::Image, inline_alloc<Subrange::Image, 1024>> work_queue(this->arena);
+				std::vector<Subrange::Image, inline_alloc<Subrange::Image, 2048>> work_queue(this->arena);
 				work_queue.emplace_back(Subrange::Image{ img_att.base_level, img_att.level_count, img_att.base_layer, img_att.layer_count });
 
 				while (work_queue.size() > 0) {
@@ -1049,7 +1049,7 @@ namespace vuk {
 				if (att.size == 0) {
 					return;
 				}
-				std::vector<Subrange::Buffer, inline_alloc<Subrange::Buffer, 1024>> work_queue(this->arena);
+				std::vector<Subrange::Buffer, inline_alloc<Subrange::Buffer, 2048>> work_queue(this->arena);
 				work_queue.emplace_back(Subrange::Buffer{ att.offset, att.size });
 
 				while (work_queue.size() > 0) {
